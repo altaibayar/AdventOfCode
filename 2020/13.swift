@@ -51,7 +51,7 @@ func part2(list: [String]) {
     let A = tmp.map { "\($0.n - $0.a)" }.joined(separator: ", ")
     let N = tmp.map { "\($0.n)" }.joined(separator: ", ")
 
-    print("--- COPY PASTE TO 12.py ---")
+    print("--- COPY PASTE TO 13.py ---")
     print(N)
     print("------")
     print(A)
