@@ -41,7 +41,7 @@ func key(_ coord: Coord) -> String {
     return "\(coord.x)_\(coord.y)_\(coord.z)_\(coord.w)"
 }
 
-func tripleLoop(from coord: Coord, step: (Coord) -> Swift.Void) {
+func loop(from coord: Coord, step: (Coord) -> Swift.Void) {
     for x in coord.x - 1 ... coord.x + 1 {
         for y in coord.y - 1 ... coord.y + 1 {
             for z in coord.z - 1 ... coord.z + 1 {
@@ -53,7 +53,7 @@ func tripleLoop(from coord: Coord, step: (Coord) -> Swift.Void) {
     }
 }
 
-func tripleLoop(side: Int, step: (Coord) -> Swift.Void) {
+func loop(side: Int, step: (Coord) -> Swift.Void) {
     for x in -side ... +side {
         for y in -side ... +side {
             for z in -side ... +side {
@@ -68,7 +68,7 @@ func tripleLoop(side: Int, step: (Coord) -> Swift.Void) {
 func neighbours(state: State, coord: Coord) -> (active: Int, inactive: Int) {
     var active = 0, inactive = 0
 
-    tripleLoop(from: coord) { (x, y, z, w) in
+    loop(from: coord) { (x, y, z, w) in
         if coord.x == x && coord.y == y && coord.z == z && coord.w == w {
             return
         }
@@ -86,7 +86,7 @@ func neighbours(state: State, coord: Coord) -> (active: Int, inactive: Int) {
 func step(state: State) -> State {
     var newState = State(active: Set<String>(), side: state.side + 1)
 
-    tripleLoop(side: newState.side) { coord in
+    loop(side: newState.side) { coord in
         let neigh = neighbours(state: state, coord: coord)
 
         if state.active(coord: coord) {
