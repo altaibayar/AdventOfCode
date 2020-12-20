@@ -1851,7 +1851,7 @@ let input_short = [
 
 typealias MapTyle = (id: Int, bottom: String, right: String)
 
-func buildCombinations(left: String, top: String, right: String, bottom: String) -> [String: [(String, String)]] {
+func buildCombinations(left: String, top: String, right: String, bottom: String) -> [String: (String, String)] {
     let bases = [
         //base
         (left, top, right, bottom),
@@ -1862,7 +1862,6 @@ func buildCombinations(left: String, top: String, right: String, bottom: String)
         // mirror
         // RB -> LT
         (bottom.reverse, right.reverse, top.reverse, left.reverse),
-
         // LB -> RT
         (top, left, bottom, right)
     ]
@@ -1871,31 +1870,22 @@ func buildCombinations(left: String, top: String, right: String, bottom: String)
     for base in bases {
         let (left, top, right, bottom) = base
 
-        let rotation = [
+        let rotations = [
             (left, top, right, bottom),
             (top, right, bottom, left),
             (right, bottom, left, top),
             (bottom, left, top, right),
         ]
 
-        rotation.forEach { allCombinations.append($0) }
+        for rotation in rotations {
+            allCombinations.append(rotation)
+        }
     }
 
-    var result = [String: [(String, String)]]()
+    var result = [String: (String, String)]()
     for ac in allCombinations {
-        let key1 = ac.0
-        if result[key1] != nil {
-            result[key1]?.append((ac.2, ac.3))
-        } else {
-            result[key1] = [(ac.2, ac.3)]
-        }
-
-        let key2 = "\(ac.0)_\(ac.1)"
-        if result[key2] != nil {
-            result[key2]?.append((ac.2, ac.3))
-        } else {
-            result[key2] = [(ac.2, ac.3)]
-        }
+        result[ac.0] = (ac.2, ac.3)
+        result["\(ac.0)_\(ac.1)"] = (ac.2, ac.3)
     }
 
     return result;
@@ -1903,7 +1893,15 @@ func buildCombinations(left: String, top: String, right: String, bottom: String)
 
 struct Tile {
     let id: Int
-    let combinations: [String: [(String, String)]]
+
+    let left: String
+    let top: String
+    let right: String
+    let bottom: String
+
+    var corners: Int = 0
+
+    let combinations: [String: (String, String)]
 }
 
 extension String {
@@ -1913,7 +1911,6 @@ extension String {
 }
 
 extension Tile: Hashable, Equatable {
-
     static func == (lhs: Self, rhs: Self) -> Bool {
         return lhs.id == rhs.id
     }
@@ -1929,6 +1926,12 @@ extension Tile: Hashable, Equatable {
 
         return Tile(
             id: id,
+
+            left: left,
+            top: lines[1],
+            right: right,
+            bottom: lines.last!,
+
             combinations: buildCombinations(left: left, top: lines[1], right: right, bottom: lines.last!))
     }
 
@@ -1940,18 +1943,16 @@ extension Tile: Hashable, Equatable {
 
         if let rootRight = rootRight, let rootBottom = rootBottom {
             let key = "\(rootRight)_\(rootBottom)"
-            self.combinations[key]?.forEach { (right, bottom) in
+            if let (right, bottom) = self.combinations[key] {
                 result.append((id: self.id, bottom: bottom, right: right))
             }
         } else if let rootRight = rootRight {
-            self.combinations[rootRight]?.forEach { (right, bottom) in
+            if let (right, bottom) = self.combinations[rootRight] {
                 result.append((id: self.id, bottom: bottom, right: right))
             }
         } else {
             for (_, val) in self.combinations {
-                val.forEach { (right, bottom) in
-                    result.append((id: self.id, bottom: bottom, right: right))
-                }
+                result.append((id: self.id, bottom: val.1, right: val.0))
             }
         }
 
@@ -1968,23 +1969,72 @@ func parse(lines: [String]) -> [Int: Tile] {
         result[tile.id] = tile
     }
 
+    let allCombs: (Tile) -> Set<String> = { rule in
+        let r1Set = [rule.left, rule.top, rule.right, rule.bottom]
+
+        var result = Set<String>()
+        r1Set.forEach {
+            result.insert($0)
+            result.insert($0.reverse)
+        }
+
+        return result
+    }
+
+    for (_, r1) in result {
+        let set1 = allCombs(r1)
+
+        var counts = 0
+        for (_, r2) in result {
+            if r1.id == r2.id { continue }
+
+            let set2 = allCombs(r2)
+            if !set1.intersection(set2).isEmpty {
+                counts += 1
+            }
+        }
+
+        assert(counts == 2 || counts == 3 || counts == 4)
+        result[r1.id]?.corners = counts
+    }
+
     return result
 }
 
-func matchingTiles(from tiles: inout [Int: Tile], right: String?, bottom: String?) -> [MapTyle] {
-    let matching = tiles.values
+func matchingTiles(from available: inout [Int: Tile], N: Int, tileX: Int, tileY: Int, right: String?, bottom: String?) -> [MapTyle] {
+    let corners: Int
+    if tileX == 0 && tileY == 0 {
+        corners = 2
+    } else if tileX == N - 1 && tileY == 0 {
+        corners = 2
+    } else if tileX == 0 && tileY == N - 1 {
+        corners = 2
+    } else if tileX == N - 1 && tileY == N - 1 {
+        corners = 2
+    } else if tileX == 0 || tileY == 0 || tileX == N - 1 || tileY == N - 1 {
+        corners = 3
+    } else {
+        corners = 4
+    }
+
+    let matching = available
+        .values
+        .filter { $0.corners == corners }
         .flatMap { $0.matching(right: right, bottom: bottom) }
 
     return matching
 }
 
-func rec(available: inout [Int: Tile], map: inout [[MapTyle?]], tileX: Int, tileY: Int) -> Bool {
+func rec(available: inout [Int: Tile], map: inout [[MapTyle?]], N: Int, tileX: Int, tileY: Int) -> Bool {
     guard tileY < map.count else {
         return true
     }
 
     let matches = matchingTiles(
         from: &available,
+        N: N,
+        tileX: tileX,
+        tileY: tileY,
         right: tileX > 0 ? map[tileY][tileX - 1]!.right : nil,
         bottom: tileY > 0 ? map[tileY - 1][tileX]!.bottom : nil)
 
@@ -1994,16 +2044,17 @@ func rec(available: inout [Int: Tile], map: inout [[MapTyle?]], tileX: Int, tile
 
         var nextX = tileX + 1
         let nextY: Int
-        if nextX == map.count {
+        if nextX == N {
             nextX = 0
             nextY = tileY + 1
         } else {
             nextY = tileY
         }
 
-        if rec(available: &available, map: &map, tileX: nextX, tileY: nextY) {
+        if rec(available: &available, map: &map, N: N, tileX: nextX, tileY: nextY) {
             return true
         }
+
         map[tileY][tileX] = nil
         available[match.id] = removedTile
     }
@@ -2013,11 +2064,14 @@ func rec(available: inout [Int: Tile], map: inout [[MapTyle?]], tileX: Int, tile
 
 func part1(lines: [String]) {
     var tiles = parse(lines: lines)
+    let corners = tiles.values.filter { $0.corners == 2 }.map { $0.id }
+    print("Part1: \(corners)")
+    print("Part1: \(corners.reduce(1, *))")
 
     let N = Int(sqrt(Double(tiles.count)))
     var map: [[MapTyle?]] = Array(repeating: Array(repeating: nil, count: N), count: N)
 
-    let result = rec(available: &tiles, map: &map, tileX: 0, tileY: 0)
+    let result = rec(available: &tiles, map: &map, N: N, tileX: 0, tileY: 0)
     if result {
         let corners: [Int] = [
             map[0][0]?.id,
