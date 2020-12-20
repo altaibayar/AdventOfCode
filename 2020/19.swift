@@ -659,28 +659,24 @@ func literalify(from rootRule: Rule, current: String, rules: [Rule]) -> [String]
         fatalError()
     }
 
+    if deepCheckIds.contains(rootRule.id) {
+        if let d = deepness[rootRule.id] {
+            if d < MAX_DEEP {
+                deepness[rootRule.id] = d + 1
+            } else {
+                return [""]
+            }
+        } else {
+            deepness[rootRule.id] = 1
+        }
+    }
+
     var result = [String]()
 
     for ids in ruleIds {
         var acc = [String]()
-
         for ruleId in ids {
             let currentRule = rules.first(where: { $0.id == ruleId })!
-
-            if deepCheckIds.contains(ruleId) {
-                if let d = deepness[ruleId] {
-                    if d < MAX_DEEP {
-                        deepness[ruleId] = d + 1
-                    } else {
-                        // Do not go this deep
-                        acc.removeAll()
-                        break
-                    }
-                } else {
-                    deepness[ruleId] = 1
-                }
-            }
-
             let literals = literalify(from: currentRule, current: current, rules: rules)
 
             if acc.isEmpty {
