@@ -1851,12 +1851,47 @@ let input_short = [
 
 typealias MapTyle = (id: Int, bottom: String, right: String)
 
+func buildCombinations(left: String, top: String, right: String, bottom: String) -> [(String, String, String, String)] {
+    let bases = [
+        //base
+        (left, top, right, bottom),
+        // flip V
+        (left.reverse, bottom, right.reverse, top),
+        // flip H
+        (right, top.reverse, left, bottom.reverse),
+        // mirror
+        // RB -> LT
+        (bottom.reverse, right.reverse, top.reverse, left.reverse),
+
+        // LB -> RT
+        (top, left, bottom, right)
+    ]
+
+    var result: [(String, String, String, String)] = []
+    for base in bases {
+        let (left, top, right, bottom) = base
+
+        let rotation = [
+            (left, top, right, bottom),
+            (top, right, bottom, left),
+            (right, bottom, left, top),
+            (bottom, left, top, right),
+        ]
+
+        rotation.forEach { result.append($0) }
+    }
+
+    return result;
+}
+
 struct Tile {
     let id: Int
+
     let top: String
     let left: String
     let right: String
     let bottom: String
+    let combinations: [(String, String, String, String)]
 }
 
 extension String {
@@ -1865,68 +1900,28 @@ extension String {
     }
 }
 
-extension Tile: Hashable {
+extension Tile: Hashable, Equatable {
+
+    static func == (lhs: Self, rhs: Self) -> Bool {
+        return lhs.id == rhs.id
+    }
+
     func hash(into hasher: inout Hasher) {
         hasher.combine(self.id)
     }
 
     static func parse(lines: [String]) -> Tile {
+        let id = Int(lines[0].components(separatedBy: CharacterSet.decimalDigits.inverted).joined())!
+        let left = lines[1 ..< 11].map { String($0.first!) }.joined()
+        let right = lines[1 ..< 11].map { String($0.last!) }.joined()
+
         return Tile(
-            id: Int(lines[0].components(separatedBy: CharacterSet.decimalDigits.inverted).joined())!,
+            id: id,
             top: lines[1],
-            left: lines[1 ..< 11].map { String($0.first!) }.joined(),
-            right: lines[1 ..< 11].map { String($0.last!) }.joined(),
-            bottom: lines.last!)
-    }
-
-    func allCombinations(_ step: (String, String, String, String) -> Swift.Void) {
-        let bases = [
-            //base
-            (left, top, right, bottom),
-            // flip V
-            (left.reverse, bottom, right.reverse, top),
-            // flip H
-            (right, top.reverse, left, bottom.reverse),
-            // mirror
-            // RB -> LT
-            (bottom.reverse, right.reverse, top.reverse, left.reverse),
-
-            // LB -> RT
-            (top, left, bottom, right)
-        ]
-
-        for base in bases {
-            let (left, top, right, bottom) = base
-
-            let rotation = [
-                (left, top, right, bottom),
-                (top, right, bottom, left),
-                (right, bottom, left, top),
-                (bottom, left, top, right),
-            ]
-
-            rotation.forEach(step)
-        }
-
-//        [
-//            // rotation
-//            (left, top, right, bottom),
-//            (top, right, bottom, left),
-//            (right, bottom, left, top),
-//            (bottom, left, top, right),
-//            // flip V
-//            (left.reverse, bottom, right.reverse, top),
-//            // flip H
-//            (right, top.reverse, left, bottom.reverse),
-//
-//            // mirror
-//            // RB -> LT
-//            (bottom.reverse, right.reverse, top.reverse, left.reverse),
-//
-//            // LB -> RT
-//            (top, left, bottom, right)
-//
-//        ].forEach(step)
+            left: left,
+            right: right,
+            bottom: lines.last!,
+            combinations: buildCombinations(left: left, top: lines[1], right: right, bottom: lines.last!))
     }
 
     func matching(right: String?, bottom: String?) -> [MapTyle] {
@@ -1935,7 +1930,7 @@ extension Tile: Hashable {
         let rootRight = right
         let rootBottom = bottom
 
-        allCombinations { (left, top, right, bottom) in
+        for (left, top, right, bottom) in self.combinations {
             if let rootRight = rootRight, let rootBottom = rootBottom {
                 if left == rootRight && top == rootBottom {
                     result.append((id: self.id, bottom: bottom, right: right))
@@ -1976,13 +1971,6 @@ func rec(available: inout [Int: Tile], map: inout [[MapTyle?]], tileX: Int, tile
     guard tileY < map.count else {
         return true
     }
-
-//    if
-//        map[0].compactMap { $0?.id }.elementsEqual([1951, 2311, 3079]) &&
-//        map[1].compactMap { $0?.id }.elementsEqual([2729, 1427])
-//    {
-//        print("Hello")
-//    }
 
     let matches = matchingTiles(
         from: &available,
