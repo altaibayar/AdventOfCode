@@ -1851,7 +1851,7 @@ let input_short = [
 
 typealias MapTyle = (id: Int, bottom: String, right: String)
 
-func buildCombinations(left: String, top: String, right: String, bottom: String) -> [(String, String, String, String)] {
+func buildCombinations(left: String, top: String, right: String, bottom: String) -> [String: [(String, String)]] {
     let bases = [
         //base
         (left, top, right, bottom),
@@ -1867,7 +1867,7 @@ func buildCombinations(left: String, top: String, right: String, bottom: String)
         (top, left, bottom, right)
     ]
 
-    var result: [(String, String, String, String)] = []
+    var allCombinations: [(String, String, String, String)] = []
     for base in bases {
         let (left, top, right, bottom) = base
 
@@ -1878,7 +1878,24 @@ func buildCombinations(left: String, top: String, right: String, bottom: String)
             (bottom, left, top, right),
         ]
 
-        rotation.forEach { result.append($0) }
+        rotation.forEach { allCombinations.append($0) }
+    }
+
+    var result = [String: [(String, String)]]()
+    for ac in allCombinations {
+        let key1 = ac.0
+        if result[key1] != nil {
+            result[key1]?.append((ac.2, ac.3))
+        } else {
+            result[key1] = [(ac.2, ac.3)]
+        }
+
+        let key2 = "\(ac.0)_\(ac.1)"
+        if result[key2] != nil {
+            result[key2]?.append((ac.2, ac.3))
+        } else {
+            result[key2] = [(ac.2, ac.3)]
+        }
     }
 
     return result;
@@ -1886,12 +1903,7 @@ func buildCombinations(left: String, top: String, right: String, bottom: String)
 
 struct Tile {
     let id: Int
-
-    let top: String
-    let left: String
-    let right: String
-    let bottom: String
-    let combinations: [(String, String, String, String)]
+    let combinations: [String: [(String, String)]]
 }
 
 extension String {
@@ -1917,10 +1929,6 @@ extension Tile: Hashable, Equatable {
 
         return Tile(
             id: id,
-            top: lines[1],
-            left: left,
-            right: right,
-            bottom: lines.last!,
             combinations: buildCombinations(left: left, top: lines[1], right: right, bottom: lines.last!))
     }
 
@@ -1930,17 +1938,20 @@ extension Tile: Hashable, Equatable {
         let rootRight = right
         let rootBottom = bottom
 
-        for (left, top, right, bottom) in self.combinations {
-            if let rootRight = rootRight, let rootBottom = rootBottom {
-                if left == rootRight && top == rootBottom {
-                    result.append((id: self.id, bottom: bottom, right: right))
-                }
-            } else if let rootRight = rootRight {
-                if left == rootRight {
-                    result.append((id: self.id, bottom: bottom, right: right))
-                }
-            } else {
+        if let rootRight = rootRight, let rootBottom = rootBottom {
+            let key = "\(rootRight)_\(rootBottom)"
+            self.combinations[key]?.forEach { (right, bottom) in
                 result.append((id: self.id, bottom: bottom, right: right))
+            }
+        } else if let rootRight = rootRight {
+            self.combinations[rootRight]?.forEach { (right, bottom) in
+                result.append((id: self.id, bottom: bottom, right: right))
+            }
+        } else {
+            for (_, val) in self.combinations {
+                val.forEach { (right, bottom) in
+                    result.append((id: self.id, bottom: bottom, right: right))
+                }
             }
         }
 
