@@ -7,5 +7,5 @@
 
 import Foundation
 
-Problem1.dowork()
+Problem.dowork2()
 

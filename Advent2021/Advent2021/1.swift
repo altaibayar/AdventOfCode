@@ -1,7 +1,7 @@
-enum Problem1 { }
+enum Problem { }
 
-extension Problem1 {
-  static let numbers = [
+extension Problem {
+  private static let numbers = [
     196,
     197,
     176,
@@ -2004,11 +2004,11 @@ extension Problem1 {
     3728
   ]
 
-  static func dowork() {
+  static func dowork1() {
     var result = 0
 
-    for i in 1 ... Problem1.numbers.count - 1 {
-      if Problem1.numbers[i - 1] < Problem1.numbers[i] {
+    for i in 1 ... numbers.count - 1 {
+      if numbers[i - 1] < numbers[i] {
         result += 1
       }
     }
