@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		002B23E32B228B0800970E97 /* task4.swift in Sources */ = {isa = PBXBuildFile; fileRef = 002B23E22B228B0800970E97 /* task4.swift */; };
+		00730A062B25E7AD004D41F4 /* task5.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00730A052B25E7AD004D41F4 /* task5.swift */; };
+		00730A082B260568004D41F4 /* Day5.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00730A072B260568004D41F4 /* Day5.swift */; };
 		00CC4ABF2B1CCFBD0046D49C /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00CC4ABE2B1CCFBD0046D49C /* main.swift */; };
 		00CC4AC62B1CCFD10046D49C /* task3.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00CC4AC52B1CCFD10046D49C /* task3.swift */; };
 /* End PBXBuildFile section */
@@ -26,6 +28,8 @@
 
 /* Begin PBXFileReference section */
 		002B23E22B228B0800970E97 /* task4.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = task4.swift; sourceTree = "<group>"; };
+		00730A052B25E7AD004D41F4 /* task5.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = task5.swift; sourceTree = "<group>"; };
+		00730A072B260568004D41F4 /* Day5.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Day5.swift; sourceTree = "<group>"; };
 		00CC4ABB2B1CCFBD0046D49C /* AoC23 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = AoC23; sourceTree = BUILT_PRODUCTS_DIR; };
 		00CC4ABE2B1CCFBD0046D49C /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		00CC4AC52B1CCFD10046D49C /* task3.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = task3.swift; sourceTree = "<group>"; };
@@ -64,6 +68,8 @@
 				00CC4ABE2B1CCFBD0046D49C /* main.swift */,
 				00CC4AC52B1CCFD10046D49C /* task3.swift */,
 				002B23E22B228B0800970E97 /* task4.swift */,
+				00730A052B25E7AD004D41F4 /* task5.swift */,
+				00730A072B260568004D41F4 /* Day5.swift */,
 			);
 			path = AoC23;
 			sourceTree = "<group>";
@@ -127,7 +133,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				00CC4AC62B1CCFD10046D49C /* task3.swift in Sources */,
+				00730A082B260568004D41F4 /* Day5.swift in Sources */,
 				002B23E32B228B0800970E97 /* task4.swift in Sources */,
+				00730A062B25E7AD004D41F4 /* task5.swift in Sources */,
 				00CC4ABF2B1CCFBD0046D49C /* main.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
