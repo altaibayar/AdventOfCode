@@ -7,4 +7,5 @@
 
 import Foundation
 
-Task7.main()
+Task8.main()
+
