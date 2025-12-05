@@ -7,5 +7,4 @@
 
 import Foundation
 
-print("Hello, World!")
-
+Day1().doWork()
