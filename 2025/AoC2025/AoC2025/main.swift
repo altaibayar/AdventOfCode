@@ -7,4 +7,4 @@
 
 import Foundation
 
-Day2().doWork()
+Day3().doWork()
